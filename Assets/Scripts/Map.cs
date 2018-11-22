@@ -9,14 +9,16 @@ public class Map : MonoBehaviour
     public Vector2 cellSize;
     public bool irregular;
     public int mapRadio;
-    public int touchPoints;
+    public int minTouchPoints;
     public GameObject[] cellPrefabs;
+    public GameObject playerPrefab;
 
     private Vector2 mapSize;
     private Vector2 spawnPointsMargen; // from the corner;
     private Cell[,] map;
     private List<Cell> cells;
     private Cell[] spawnCells;
+    private Player[] players;
 
     // Use this for initialization
     void Start()
@@ -28,21 +30,28 @@ public class Map : MonoBehaviour
         LinkCells();
         SetSpawnPoints();
 
-        if(irregular) {
-            BuildMap(touchPoints);
+        if (irregular)
+        {
+            BuildMap(minTouchPoints);
         }
 
         DetectBorder();
-//        DetectIndestructibleCells();
-//        SetDestructibleCells(70);
+        DetectIndestructibleCells();
+
+        KeyValuePair<ItemType, int>[] items = new KeyValuePair<ItemType, int>[3];
+        items[0] = new KeyValuePair<ItemType, int>(ItemType.bombUp, 20);
+        items[1] = new KeyValuePair<ItemType, int>(ItemType.speedUp, 20);
+        items[2] = new KeyValuePair<ItemType, int>(ItemType.scopeUp, 20);
+
+
+        SetDestructibleCells(70, items);
 
         ShowMap();
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
+        players = new Player[1];
+        players[0] = new Player(spawnCells[0]);
 
+        ShowPlayers();
     }
 
     private void MapInit()
@@ -63,18 +72,34 @@ public class Map : MonoBehaviour
 
     private void ShowMap() {
         foreach (Cell cell in cells) {
-            if(cell.GetCellType() != CellType.Outside) {
-                Instantiate(cellPrefabs[(int)cell.GetCellType()], cell.position, Quaternion.identity, this.transform);
+            switch(cell.GetCellType()) {
+                case CellType.Indestructible:
+                    var cellI = Instantiate(cellPrefabs[(int)cell.GetCellType()], cell.position, Quaternion.identity, this.transform);
+                    cell.go = cellI;
+                    break;
+                case CellType.Destructible:
+                    var cellD = Instantiate(cellPrefabs[(int)cell.GetCellType()], cell.position, Quaternion.identity, this.transform);
+                    cell.go = cellD;
+                    break;
             }
+        }
+    }
+
+    private void ShowPlayers() {
+        foreach(Player player in players) {
+            Vector3 spawnPosition = player.cell.position + (Vector3.up * playerPrefab.transform.localScale.y);
+            var playerGO = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
+            player.SetGO(playerGO);
+            playerGO.GetComponent<PlayerController>().SetPlayer(player);
         }
     }
 
     private void LinkCells() {
         for (int xi = 0; xi < mapSize.x; xi++) {
             for (int yi = 0; yi < mapSize.y; yi++) {
-                if (yi > 0)                 { map[xi, yi].AddLink(map[xi, yi - 1], Side.Up); }
+                if (yi > 0)                 { map[xi, yi].AddLink(map[xi, yi - 1], Side.Down); }
                 if (xi > 0)                 { map[xi, yi].AddLink(map[xi - 1, yi], Side.Left); }
-                if (yi < mapSize.y - 1)     { map[xi, yi].AddLink(map[xi, yi + 1], Side.Down); }
+                if (yi < mapSize.y - 1)     { map[xi, yi].AddLink(map[xi, yi + 1], Side.Up); }
                 if (xi < mapSize.x - 1)     { map[xi, yi].AddLink(map[xi + 1, yi], Side.Right); }
 
                 if (yi > 0 && xi > 0)                           { map[xi, yi].AddLink(map[xi - 1, yi - 1]); }
@@ -120,12 +145,24 @@ public class Map : MonoBehaviour
         }
     }
 
-    private void SetDestructibleCells(float probability) {
+    private void SetDestructibleCells(float probability, KeyValuePair<ItemType, int>[] itemsNumbers) {
+        int i = 0;
+        int v = 0;
         foreach(Cell cell in cells) {
             if (cell.GetCellType() == CellType.Walkable) {
                 if (!cell.spawnPoint && !cell.IsNextToSpawnPoint()) {
                     if (Random.Range(0f, 100f) <= probability) {
                         cell.SetCellType(CellType.Destructible);
+                        if (i < itemsNumbers.Length) {
+                            if (v < itemsNumbers[i].Value) {
+                                cell.itemType = itemsNumbers[i].Key;
+                                v++;
+                                if (v >= itemsNumbers[i].Value) { // next item type
+                                    i++;
+                                    v = 0;
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -6,6 +6,8 @@ public enum CellType {Outside, Indestructible, Destructible, Walkable}
 
 public enum Side {Right, Up, Left, Down, Other}
 
+public enum ItemType {speedUp, bombUp, scopeUp, nothing}
+
 public class Cell {
     public Vector3 position;
     public Vector2 mapPosition;
@@ -19,6 +21,10 @@ public class Cell {
     public Cell[] sides;
     public bool spawnPoint;
     public int walkableAreaIndex;
+    public GameObject go;
+    public GameObject bomb;
+    public ItemType itemType;
+    public GameObject item;
 
     private CellType cellType;
 
@@ -28,6 +34,8 @@ public class Cell {
         links = new List<Cell>();
         spawnPoint = false;
         sides = new Cell[4] { null, null, null, null };
+        bomb = null;
+        itemType = ItemType.nothing;
         this.position = new Vector3(position.x, cellHeigh[cellType], position.y);
     }
 
@@ -95,4 +103,17 @@ public class Cell {
         return false;
     }
 
+    public void BombImpact() {
+        if(cellType == CellType.Destructible) {
+            if(go != null) {
+                cellType = CellType.Walkable;
+                CellController cc = go.GetComponent<CellController>();
+                if (itemType != ItemType.nothing) {
+                    item = cc.PutItem((int)itemType);
+                }
+                cc.Destroy();
+                go = null;
+            }
+        }
+    }
 }
