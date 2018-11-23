@@ -54,6 +54,10 @@ public class Player {
                 if (CellIsWalkable(cell.sides[(int)sideTry]) || sideTry == GetOppositeSide(currentSide)) { // closing to the center to change of direction or walking directly to the center
                     if (directionSpeed.magnitude < direction.magnitude || sideTry == GetOppositeSide(currentSide)) {
                         go.transform.position -= directionSpeed;
+                        if(directionSpeed.magnitude > direction.magnitude && sideTry == GetOppositeSide(currentSide)) {
+                            nextCell = cell.sides[(int)sideTry];
+                            currentSide = sideTry;
+                        }
                     } else {
                         go.transform.position -= direction;
                     }
