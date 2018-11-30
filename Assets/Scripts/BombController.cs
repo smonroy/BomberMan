@@ -68,6 +68,7 @@ public class BombController : MonoBehaviour {
             }
         }
         player.bombUsed--;
+        player.updateUI();
 
         var fire1 = Instantiate(firePrefab, transform.position, Quaternion.identity);
         fire1.transform.Rotate(Vector3.right, -90);

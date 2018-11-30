@@ -21,6 +21,7 @@ public class Map : NetworkBehaviour {
     private Player[] players;
     private int numPlayers;
 
+
     public override void OnStartServer() {
         cellSize = new Vector2(1f, 1f);
         mapRadio = 5;

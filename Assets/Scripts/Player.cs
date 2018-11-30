@@ -7,7 +7,9 @@ public class Player {
     public int bombNumber;
     public int bombUsed;
     public int bombScope;
+    public int speedCount;
     public float initialSpeed;
+    public UIController uiCont;
 
     private const float centerMargin = 0.05f;
     private GameObject go;
@@ -24,11 +26,11 @@ public class Player {
         bombUsed = 0;
         bombNumber = 1;
         bombScope = 1;
+        speedCount = 1;
         initialSpeed = 0.6f;
         incrementsSpeed = 0.1f;
         maximunSpeed = 1.4f;
         currentSpeed = initialSpeed;
-
     }
 
     public void SetGO(GameObject go) {
@@ -149,25 +151,38 @@ public class Player {
         bc.player = this;
         bc.maxScope = bombScope;
         bombUsed++;
+        updateUI();
     }
 
     public void TakeItem() {
         switch (cell.itemType) {
             case ItemType.bombUp:
                 bombNumber++;
+                pc.uIController.bombUp.Play();
                 break;
             case ItemType.scopeUp:
                 bombScope++;
+                pc.uIController.rangeUp.Play();
                 break;
             case ItemType.speedUp:
                 if(currentSpeed + incrementsSpeed <= maximunSpeed) {
                     currentSpeed += incrementsSpeed;
+                    speedCount++;
+                    pc.uIController.speedUp.Play();
                     Debug.Log(currentSpeed);
                 }
                 break;
         }
+        updateUI();
         cell.itemType = ItemType.nothing;
         cell.item.GetComponent<ItemController>().Destroy();
         cell.item = null;
+    }
+
+    public void updateUI()
+    {
+        pc.uIController.bombLabel.text = "= " + (this.bombNumber - this.bombUsed) + "/" + this.bombNumber;
+        pc.uIController.fireLabel.text = "= " + this.bombScope;
+        pc.uIController.speedLabel.text = "= " + this.speedCount;
     }
 }
