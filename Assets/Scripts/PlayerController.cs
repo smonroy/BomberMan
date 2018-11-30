@@ -1,24 +1,42 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour {
 
     public GameObject bombPrefab;
 
     private Player player;
     private Side currentSide;
     private Side previousSide;
+    private Map map;
 
     // Use this for initialization
     void Start () {
         currentSide = Side.Other;
         previousSide = currentSide;
+        map = GameObject.FindWithTag("Map").GetComponent<Map>();
+        CmdGetNewPlayer();
+//        player = map.CmdGetNewPlayer(this.gameObject);
 	}
-	
-	// Update is called once per frame
-	void Update () {
-        if(Input.GetKey(KeyCode.DownArrow)) {
+
+    [Command]
+    void CmdGetNewPlayer(){
+        player = map.GetNewPlayer(this.gameObject);
+    }
+
+    public override void OnStartLocalPlayer() {
+        GetComponent<MeshRenderer>().material.color = Color.red;
+    }
+
+    // Update is called once per frame
+    void Update () {
+        if (!isLocalPlayer) {
+            return;
+        }
+
+        if (Input.GetKey(KeyCode.DownArrow)) {
             currentSide = Side.Down;
         } else if (Input.GetKey(KeyCode.UpArrow)) {
             currentSide = Side.Up;
@@ -46,8 +64,14 @@ public class PlayerController : MonoBehaviour {
 
     void FixedUpdate() {
         if(currentSide != Side.Other) {
-            player.Move(currentSide);
+            CmdMove();
+            //player.Move(currentSide);
         }
+    }
+
+    [Command]
+    void CmdMove() {
+        player.Move(currentSide);
     }
 
     private void SetRotation(Side side) {
@@ -61,8 +85,4 @@ public class PlayerController : MonoBehaviour {
         transform.eulerAngles = new Vector3(0, angle, 0);
     }
 
-    public void SetPlayer(Player player) {
-        this.player = player;
-    }
-    
 }

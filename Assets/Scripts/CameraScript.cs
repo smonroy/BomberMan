@@ -6,20 +6,22 @@ public class CameraScript : MonoBehaviour {
     public float speed = 0.01f;
     public Vector3 offset;
     private GameObject player;
-    private bool lookat;
+    //private bool lookat;
 
 	// Use this for initialization
 	void Start () {
-        lookat = false;
+//        lookat = false;
 	}
 
     // Update is called once per frame
     void FixedUpdate() {
         if (player == null) {
-            player = GameObject.FindWithTag("Player").gameObject;
-            Vector3 position = player.transform.position + offset;
-            transform.position = position;
-            transform.LookAt(player.transform);
+            if(GameObject.FindWithTag("Player")) {
+                player = GameObject.FindWithTag("Player").gameObject;
+                Vector3 position = player.transform.position + offset;
+                transform.position = position;
+                transform.LookAt(player.transform);
+            }
         }
 
         if (player != null) {

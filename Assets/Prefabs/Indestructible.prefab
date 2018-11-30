@@ -22,6 +22,8 @@ GameObject:
   - component: {fileID: 33673295489424716}
   - component: {fileID: 23510039807076244}
   - component: {fileID: 65436667418360570}
+  - component: {fileID: 114463720116915424}
+  - component: {fileID: 114170444570609584}
   m_Layer: 0
   m_Name: Indestructible
   m_TagString: Untagged
@@ -50,7 +52,7 @@ MeshRenderer:
   m_GameObject: {fileID: 1504930246887478}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
@@ -96,3 +98,56 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114170444570609584
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1504930246887478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 1
+  m_SendInterval: 0.1
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 0
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 1
+  m_InterpolateMovement: 1
+--- !u!114 &114463720116915424
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1504930246887478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 22
+    i1: 228
+    i2: 88
+    i3: 141
+    i4: 74
+    i5: 187
+    i6: 164
+    i7: 198
+    i8: 217
+    i9: 133
+    i10: 226
+    i11: 179
+    i12: 216
+    i13: 56
+    i14: 105
+    i15: 65
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
