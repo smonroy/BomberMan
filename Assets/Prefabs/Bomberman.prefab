@@ -40,6 +40,7 @@ GameObject:
   - component: {fileID: 23766386686830626}
   - component: {fileID: 136980960842542986}
   - component: {fileID: 114767268369123308}
+  - component: {fileID: 114725407019685712}
   m_Layer: 0
   m_Name: Bomberman
   m_TagString: Player
@@ -84,7 +85,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1811675549150980}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 2.5626419, y: 1.09, z: -0.4682501}
   m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
   m_Children:
   - {fileID: 4331271389840250}
@@ -231,6 +232,38 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1886897140813672}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &114725407019685712
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1811675549150980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 174
+    i1: 94
+    i2: 113
+    i3: 203
+    i4: 54
+    i5: 249
+    i6: 180
+    i7: 6
+    i8: 106
+    i9: 187
+    i10: 229
+    i11: 225
+    i12: 105
+    i13: 224
+    i14: 185
+    i15: 175
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!114 &114767268369123308
 MonoBehaviour:
   m_ObjectHideFlags: 1

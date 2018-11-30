@@ -1,28 +1,32 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Map : MonoBehaviour
-{
+public class Map : NetworkBehaviour {
 
     public Vector2 mapCenter;
-    public Vector2 cellSize;
-    public bool irregular;
-    public int mapRadio;
-    public int minTouchPoints;
     public GameObject[] cellPrefabs;
     public GameObject playerPrefab;
 
+    private Vector2 cellSize;
+    private bool irregular;
+    private int mapRadio;
+    private int minTouchPoints;
     private Vector2 mapSize;
     private Vector2 spawnPointsMargen; // from the corner;
     private Cell[,] map;
     private List<Cell> cells;
     private Cell[] spawnCells;
     private Player[] players;
+    private int numPlayers;
 
-    // Use this for initialization
-    void Start()
-    {
+    public override void OnStartServer() {
+        cellSize = new Vector2(1f, 1f);
+        mapRadio = 5;
+        minTouchPoints = 2;
+        irregular = true;
+
         mapSize = new Vector2(mapRadio * 4 + 3, mapRadio * 4 + 3);
         spawnPointsMargen = new Vector2(1, 1);
 
@@ -30,8 +34,7 @@ public class Map : MonoBehaviour
         LinkCells();
         SetSpawnPoints();
 
-        if (irregular)
-        {
+        if (irregular) {
             BuildMap(minTouchPoints);
         }
 
@@ -48,14 +51,19 @@ public class Map : MonoBehaviour
 
         ShowMap();
 
-        players = new Player[1];
-        players[0] = new Player(spawnCells[0]);
+        numPlayers = 0;
+        players = new Player[4];
 
-        ShowPlayers();
+        Transform[] allChildren = GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildren) {
+            if (child.tag != "StartPosition") {
+                NetworkServer.Spawn(child.gameObject);
+            }
+        }
     }
 
-    private void MapInit()
-    {
+
+    private void MapInit() {
         map = new Cell[(int)mapSize.x, (int)mapSize.y];
         cells = new List<Cell>();
         for (int xi = 0; xi < mapSize.x; xi++) {
@@ -85,13 +93,13 @@ public class Map : MonoBehaviour
         }
     }
 
-    private void ShowPlayers() {
-        foreach(Player player in players) {
-            Vector3 spawnPosition = player.cell.position + (Vector3.up * playerPrefab.transform.localScale.y);
-            var playerGO = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
-            player.SetGO(playerGO);
-            playerGO.GetComponent<PlayerController>().SetPlayer(player);
-        }
+    public Player GetNewPlayer(GameObject go) {
+        Player player = new Player(spawnCells[numPlayers]);
+        players[numPlayers] = player;
+        Debug.Log("numPlayer: " + numPlayers);
+        numPlayers++;
+        player.SetGO(go);
+        return player;
     }
 
     private void LinkCells() {
@@ -142,6 +150,13 @@ public class Map : MonoBehaviour
         spawnCells[3] = map[(int)spawnPointsMargen.x, (int)(mapSize.y - spawnPointsMargen.y - 1)];
         foreach (Cell cell in spawnCells) {
             cell.SetSpawnCell();
+        }
+        Transform[] allChildren = GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildren) {
+            if (child.tag == "StartPosition") {
+                int i = int.Parse(child.name.Substring(child.name.Length - 1));
+                child.position = spawnCells[i].position + (Vector3.up * playerPrefab.transform.localScale.y);
+            }
         }
     }
 
