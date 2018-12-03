@@ -23,9 +23,9 @@ public class Map : NetworkBehaviour {
 
     public override void OnStartServer() {
         cellSize = new Vector2(1f, 1f);
-        mapRadio = 5;
+        mapRadio = 3;
         minTouchPoints = 2;
-        irregular = true;
+        irregular = false;
 
         mapSize = new Vector2(mapRadio * 4 + 3, mapRadio * 4 + 3);
         spawnPointsMargen = new Vector2(1, 1);
@@ -101,6 +101,7 @@ public class Map : NetworkBehaviour {
         player.SetGO(go);
         return player;
     }
+
 
     private void LinkCells() {
         for (int xi = 0; xi < mapSize.x; xi++) {

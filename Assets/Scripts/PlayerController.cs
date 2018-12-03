@@ -17,13 +17,15 @@ public class PlayerController : NetworkBehaviour {
         currentSide = Side.Other;
         previousSide = currentSide;
         map = GameObject.FindWithTag("Map").GetComponent<Map>();
+//        map.CmdGetNewPlayer(this.gameObject, out player);
         CmdGetNewPlayer();
 //        player = map.CmdGetNewPlayer(this.gameObject);
-	}
+    }
 
     [Command]
     void CmdGetNewPlayer(){
         player = map.GetNewPlayer(this.gameObject);
+        Debug.Log("GetNewPlayer");
     }
 
     public override void OnStartLocalPlayer() {

@@ -11,5 +11,6 @@ public class GameController : NetworkBehaviour {
         var map = Instantiate(mapPrefab);
         map.transform.name = "Map";
         NetworkServer.Spawn(map);
+        //NetworkServer.SpawnWithClientAuthority(map, connectionToClient);
     }
 }
