@@ -37,6 +37,8 @@ public class Player {
     }
 
     public void Move(Side sideTry) {
+        Debug.Log("sideTry: " + sideTry);
+        Debug.Log("Cell: " + cell.mapPosition);
         if (nextCell == null) { // is in the center of a cell
             if (CellIsWalkable(cell.sides[(int)sideTry])) {
                 nextCell = cell.sides[(int)sideTry];
@@ -49,21 +51,25 @@ public class Player {
             direction.y = 0;
             Vector3 directionSpeed = direction.normalized * currentSpeed / 10;
             if (currentSide == sideTry) { // go away from the center
-                go.transform.position += directionSpeed;
+                pc.RpcPosition(directionSpeed, false);
+                // go.transform.position += directionSpeed;
             } else {
                 if (CellIsWalkable(cell.sides[(int)sideTry]) || sideTry == GetOppositeSide(currentSide)) { // closing to the center to change of direction or walking directly to the center
                     if (directionSpeed.magnitude < direction.magnitude || sideTry == GetOppositeSide(currentSide)) {
-                        go.transform.position -= directionSpeed;
+                        pc.RpcPosition(-directionSpeed, false);
+                        //go.transform.position -= directionSpeed;
                         if(directionSpeed.magnitude > direction.magnitude && sideTry == GetOppositeSide(currentSide)) {
                             nextCell = cell.sides[(int)sideTry];
                             currentSide = sideTry;
                         }
                     } else {
-                        go.transform.position -= direction;
+                        pc.RpcPosition(-directionSpeed, false);
+                        //go.transform.position -= direction;
                     }
                 } else {
                     if (CellIsWalkable(nextCell.sides[(int)sideTry])) { // go back to the previous cell to change direction
-                        go.transform.position += directionSpeed;
+                        pc.RpcPosition(directionSpeed, false);
+                        //go.transform.position += directionSpeed;
                     }
                 }
             }
@@ -82,7 +88,9 @@ public class Player {
             Vector3 distance = go.transform.position - cell.position;
             distance.y = 0;
             if (distance.magnitude <= centerMargin && currentSide != sideTry) {
-                go.transform.position = new Vector3(cell.position.x, go.transform.position.y, cell.position.z);
+                Vector3 pos = new Vector3(cell.position.x, go.transform.position.y, cell.position.z);
+                pc.RpcPosition(pos, true);
+                //go.transform.position = pos;
                 nextCell = null;
             }
         }

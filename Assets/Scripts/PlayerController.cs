@@ -16,16 +16,10 @@ public class PlayerController : NetworkBehaviour {
     void Start () {
         currentSide = Side.Other;
         previousSide = currentSide;
-        map = GameObject.FindWithTag("Map").GetComponent<Map>();
-//        map.CmdGetNewPlayer(this.gameObject, out player);
-        CmdGetNewPlayer();
-//        player = map.CmdGetNewPlayer(this.gameObject);
-    }
-
-    [Command]
-    void CmdGetNewPlayer(){
-        player = map.GetNewPlayer(this.gameObject);
-        Debug.Log("GetNewPlayer");
+        if(isServer) {
+            map = GameObject.FindWithTag("Map").GetComponent<Map>();
+            player = map.GetNewPlayer(this.gameObject);
+        }
     }
 
     public override void OnStartLocalPlayer() {
@@ -50,7 +44,7 @@ public class PlayerController : NetworkBehaviour {
             currentSide = Side.Other;
         }
         if(currentSide != Side.Other && currentSide != previousSide) {
-            SetRotation(currentSide);
+            CmdSetRotation(currentSide);
             previousSide = currentSide;
         }
         if(Input.GetKeyDown(KeyCode.Space)) {
@@ -66,17 +60,31 @@ public class PlayerController : NetworkBehaviour {
 
     void FixedUpdate() {
         if(currentSide != Side.Other) {
-            CmdMove();
-            //player.Move(currentSide);
+            CmdMove(currentSide);
         }
     }
 
     [Command]
-    void CmdMove() {
-        player.Move(currentSide);
+    void CmdMove(Side side) {
+        player.Move(side);
     }
 
-    private void SetRotation(Side side) {
+    [ClientRpc]
+    public void RpcPosition(Vector3 pos, bool absolute) {
+        if(absolute) {
+            transform.position = pos;
+        } else {
+            transform.position += pos;
+        }
+    }
+
+    [Command]
+    private void CmdSetRotation(Side side) {
+        RpcSetRotation(side);
+    }
+
+    [ClientRpc]
+    private void RpcSetRotation(Side side) {
         float angle = 0;
         switch (side) {
             case Side.Up:       angle = 0; break;
