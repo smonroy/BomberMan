@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class CellController : MonoBehaviour {
+public class CellController : NetworkBehaviour {
     public GameObject[] itemPrefabs;
 
     public void Destroy() {
@@ -11,6 +12,7 @@ public class CellController : MonoBehaviour {
 
     public GameObject PutItem(int itemIdex) {
         GameObject item = Instantiate(itemPrefabs[itemIdex], transform.position, Quaternion.identity);
+        NetworkServer.Spawn(item);
         return item;
     }
 }
