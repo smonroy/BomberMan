@@ -23,6 +23,8 @@ GameObject:
   - component: {fileID: 23676494513420144}
   - component: {fileID: 135273233377769260}
   - component: {fileID: 114492226084437236}
+  - component: {fileID: 114887377283427302}
+  - component: {fileID: 114450109486020184}
   m_Layer: 0
   m_Name: Bomb
   m_TagString: Untagged
@@ -85,6 +87,27 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1258668869547598}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &114450109486020184
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1258668869547598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 1
+  m_SendInterval: 0.1
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 0
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 1
+  m_InterpolateMovement: 1
 --- !u!114 &114492226084437236
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -100,6 +123,38 @@ MonoBehaviour:
   maxScope: 0
   exploting: 0
   firePrefab: {fileID: 1018188577316532, guid: f9bce26007fc341d0be4942fd4777a8b, type: 2}
+--- !u!114 &114887377283427302
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1258668869547598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 113
+    i1: 50
+    i2: 252
+    i3: 211
+    i4: 50
+    i5: 151
+    i6: 4
+    i7: 120
+    i8: 171
+    i9: 91
+    i10: 60
+    i11: 213
+    i12: 102
+    i13: 23
+    i14: 79
+    i15: 125
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!135 &135273233377769260
 SphereCollider:
   m_ObjectHideFlags: 1

@@ -48,13 +48,19 @@ public class PlayerController : NetworkBehaviour {
             previousSide = currentSide;
         }
         if(Input.GetKeyDown(KeyCode.Space)) {
-            if(player.IsPossiblePutBombHere()) {
-                Vector3 spawnPosition = new Vector3(player.cell.position.x, 0.5f, player.cell.position.z);
-                var bomb = Instantiate(bombPrefab, spawnPosition, Quaternion.identity);
-                player.SetBomb(bomb);
-                player.cell.bomb = bomb;
-                bomb.GetComponent<BombController>().cell = player.cell;
-            }
+            CmdPutBomb();
+        }
+    }
+
+    [Command]
+    void CmdPutBomb() {
+        if (player.IsPossiblePutBombHere()) {
+            Vector3 spawnPosition = new Vector3(player.cell.position.x, 0.5f, player.cell.position.z);
+            var bomb = Instantiate(bombPrefab, spawnPosition, Quaternion.identity);
+            player.SetBomb(bomb);
+            player.cell.bomb = bomb;
+            bomb.GetComponent<BombController>().cell = player.cell;
+            NetworkServer.Spawn(bomb);
         }
     }
 
