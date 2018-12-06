@@ -17,6 +17,7 @@ public class Player {
     private float currentSpeed;
     private float incrementsSpeed;
     private float maximunSpeed;
+    private Vector3 position;
 
     public Player(Cell cell) {
         this.cell = cell;
@@ -34,11 +35,11 @@ public class Player {
     public void SetGO(GameObject go) {
         this.go = go;
         pc = go.GetComponent<PlayerController>();
+        position = go.transform.position;
     }
 
     public void Move(Side sideTry) {
-        Debug.Log("sideTry: " + sideTry);
-        Debug.Log("Cell: " + cell.mapPosition);
+
         if (nextCell == null) { // is in the center of a cell
             if (CellIsWalkable(cell.sides[(int)sideTry])) {
                 nextCell = cell.sides[(int)sideTry];
@@ -47,80 +48,62 @@ public class Player {
         }
 
         if (nextCell != null) {
-            Vector3 direction = nextCell.position - go.transform.position;
-            direction.y = 0;
-            Vector3 directionSpeed = direction.normalized * currentSpeed / 10;
+            Vector3 forward = nextCell.position - position;
+            forward.y = 0;
+            forward = forward.normalized * currentSpeed / 10f;
+            Vector3 backward = cell.position - position;
+            backward.y = 0;
+
             if (currentSide == sideTry) { // go away from the center
-                pc.RpcPosition(directionSpeed, false);
-                // go.transform.position += directionSpeed;
+                ChangePosition(forward, false);
             } else {
                 if (CellIsWalkable(cell.sides[(int)sideTry]) || sideTry == GetOppositeSide(currentSide)) { // closing to the center to change of direction or walking directly to the center
-                    if (directionSpeed.magnitude < direction.magnitude || sideTry == GetOppositeSide(currentSide)) {
-                        pc.RpcPosition(-directionSpeed, false);
-                        //go.transform.position -= directionSpeed;
-                        if(directionSpeed.magnitude > direction.magnitude && sideTry == GetOppositeSide(currentSide)) {
+                    if (forward.magnitude < backward.magnitude || (sideTry == GetOppositeSide(currentSide) && CellIsWalkable(cell.sides[(int)sideTry]))) {
+                        ChangePosition(-forward, false); // full movement
+                        if(forward.magnitude > backward.magnitude) {
                             nextCell = cell.sides[(int)sideTry];
                             currentSide = sideTry;
                         }
                     } else {
-                        pc.RpcPosition(-directionSpeed, false);
-                        //go.transform.position -= direction;
+                        ChangePosition(backward, false); // limited movement
                     }
                 } else {
-                    if (CellIsWalkable(nextCell.sides[(int)sideTry])) { // go back to the previous cell to change direction
-                        pc.RpcPosition(directionSpeed, false);
-                        //go.transform.position += directionSpeed;
+                    if (CellIsWalkable(nextCell.sides[(int)sideTry])) { // go to the nextcell cell to change direction
+                        ChangePosition(forward, false);
                     }
                 }
             }
 
             // switch cell and nextCell
-            if (Vector3.Magnitude(nextCell.position - go.transform.position) < Vector3.Magnitude(cell.position - go.transform.position)) {
+            if (Vector3.Magnitude(nextCell.position - position) < Vector3.Magnitude(cell.position - position)) {
                 var tmpCell = cell;
                 cell = nextCell;
                 nextCell = tmpCell;
                 currentSide = GetOppositeSide(currentSide);
-                if(cell.item != null) {
+                if (cell.item != null) {
                     TakeItem();
                 }
             }
 
-            Vector3 distance = go.transform.position - cell.position;
+            Vector3 distance = position - cell.position;
             distance.y = 0;
             if (distance.magnitude <= centerMargin && currentSide != sideTry) {
-                Vector3 pos = new Vector3(cell.position.x, go.transform.position.y, cell.position.z);
-                pc.RpcPosition(pos, true);
-                //go.transform.position = pos;
+                Vector3 pos = new Vector3(cell.position.x, position.y, cell.position.z);
+                ChangePosition(pos, true);
                 nextCell = null;
             }
+
         }
 
     }
 
-    public Side GetSide(Vector2 movement)
-    {
-        if (Mathf.Abs(movement.x) > Mathf.Abs(movement.y))
-        {
-            if (movement.x > 0) {
-                return Side.Right;
-            } else {
-                return Side.Left;
-            }
+    public void ChangePosition(Vector3 pos, bool absolute) {
+        if (absolute) {
+            position = pos;
         } else {
-            if (movement.y < 0) {
-                return Side.Up;
-            } else {
-                return Side.Down;
-            }
+            position += pos;
         }
-    }
-
-    public float GetMagnitud(Vector2 movement) {
-        if (Mathf.Abs(movement.x) > Mathf.Abs(movement.y)) {
-            return movement.x;
-        } else {
-            return movement.y;
-        }
+        pc.RpcPosition(pos, absolute);
     }
 
     Side GetOppositeSide(Side side) {

@@ -32,23 +32,62 @@ public class PlayerController : NetworkBehaviour {
             return;
         }
 
-        if (Input.GetKey(KeyCode.DownArrow)) {
-            currentSide = Side.Down;
-        } else if (Input.GetKey(KeyCode.UpArrow)) {
-            currentSide = Side.Up;
-        } else if (Input.GetKey(KeyCode.LeftArrow)) {
-            currentSide = Side.Left;
-        } else if (Input.GetKey(KeyCode.RightArrow)) {
-            currentSide = Side.Right;
-        } else {
-            currentSide = Side.Other;
+        Side newSide = Side.Other;
+        bool isPrevious = false;
+        bool isCurrent = false;
+        bool isNew = false;
+
+        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) {
+            CompareKey(Side.Down, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
+        } 
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) {
+            CompareKey(Side.Up, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
         }
-        if(currentSide != Side.Other && currentSide != previousSide) {
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) {
+            CompareKey(Side.Left, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
+        }
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) {
+            CompareKey(Side.Right, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
+        }
+
+        if(isNew) {
+            if(isCurrent) {
+                previousSide = currentSide;
+            }
+            currentSide = newSide;
             CmdSetRotation(currentSide);
-            previousSide = currentSide;
+        } else {
+            if(!isCurrent) {
+                currentSide = previousSide;
+                if (currentSide != Side.Other) {
+                    CmdSetRotation(currentSide);
+                }
+            }
+            if(!isPrevious) {
+                previousSide = Side.Other;
+            }
         }
-        if(Input.GetKeyDown(KeyCode.Space)) {
+
+        if (Input.GetKeyDown(KeyCode.Space)) {
             CmdPutBomb();
+        }
+        Debug.Log("previuos: " + previousSide + ", current: " + currentSide);
+    }
+
+    void CompareKey(Side anySide, ref bool isNew, ref bool isCurrent, ref bool isPrevious, ref Side newSide) {
+        if (anySide == currentSide) {
+            isCurrent = true;
+        } else if (anySide == previousSide) {
+            isPrevious = true;
+        } else {
+            isNew = true;
+            newSide = anySide;
+        }
+    }
+
+    void FixedUpdate() {
+        if (currentSide != Side.Other) {
+            CmdMove(currentSide);
         }
     }
 
@@ -64,11 +103,6 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    void FixedUpdate() {
-        if(currentSide != Side.Other) {
-            CmdMove(currentSide);
-        }
-    }
 
     [Command]
     void CmdMove(Side side) {
