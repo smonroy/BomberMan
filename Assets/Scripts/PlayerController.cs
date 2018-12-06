@@ -71,7 +71,6 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetKeyDown(KeyCode.Space)) {
             CmdPutBomb();
         }
-        Debug.Log("previuos: " + previousSide + ", current: " + currentSide);
     }
 
     void CompareKey(Side anySide, ref bool isNew, ref bool isCurrent, ref bool isPrevious, ref Side newSide) {

@@ -96,7 +96,6 @@ public class Map : NetworkBehaviour {
     public Player GetNewPlayer(GameObject go) {
         Player player = new Player(spawnCells[numPlayers]);
         players[numPlayers] = player;
-        Debug.Log("numPlayer: " + numPlayers);
         numPlayers++;
         player.SetGO(go);
         return player;

@@ -10,7 +10,6 @@ public class Player {
     public float initialSpeed;
 
     private const float centerMargin = 0.05f;
-    private GameObject go;
     private Cell nextCell;
     private PlayerController pc;
     private Side currentSide;
@@ -33,7 +32,6 @@ public class Player {
     }
 
     public void SetGO(GameObject go) {
-        this.go = go;
         pc = go.GetComponent<PlayerController>();
         position = go.transform.position;
     }
