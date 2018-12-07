@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 public class PlayerController : NetworkBehaviour {
 
     public GameObject bombPrefab;
+    public UIController uIController;
 
     private Player player;
     private Side currentSide;
@@ -19,6 +20,7 @@ public class PlayerController : NetworkBehaviour {
         if(isServer) {
             map = GameObject.FindWithTag("Map").GetComponent<Map>();
             player = map.GetNewPlayer(this.gameObject);
+        uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
         }
     }
 
