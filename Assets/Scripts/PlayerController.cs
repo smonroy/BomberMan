@@ -20,7 +20,7 @@ public class PlayerController : NetworkBehaviour {
         if(isServer) {
             map = GameObject.FindWithTag("Map").GetComponent<Map>();
             player = map.GetNewPlayer(this.gameObject);
-        uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
+            uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
         }
     }
 
