@@ -20,8 +20,8 @@ public class GameController : NetworkBehaviour {
 
     public void StartGame() {
         if(isServer) {
-            uIController.startButton.gameObject.SetActive(false);
             map.BuildMap(3, false, 2);
+            uIController.startButton.gameObject.SetActive(false);
         }
     }
 }

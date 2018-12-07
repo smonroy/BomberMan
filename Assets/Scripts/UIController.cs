@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
-public class UIController : NetworkBehaviour {
+public class UIController : MonoBehaviour {
 
 
     [Header("Labels")]
@@ -27,13 +27,13 @@ public class UIController : NetworkBehaviour {
     void Start () {
         backgroundMusic.Play();
         backgroundMusic.loop = true;
-        this.player.gameObject.SetActive(true);
-        this.itemUI.gameObject.SetActive(true);
+//        this.player.gameObject.SetActive(true);
+//        this.itemUI.gameObject.SetActive(true);
     }
 
-    public override void OnStartClient() {
-        base.OnStartClient();
-        startButton.gameObject.SetActive(false);
-    }
+    //public override void OnStartClient() {
+    //    base.OnStartClient();
+    //    startButton.gameObject.SetActive(false);
+    //}
 
 }

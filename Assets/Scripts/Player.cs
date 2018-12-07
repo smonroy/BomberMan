@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum PlayerState { Start, Play, Over }
+
 public class Player {
     public Cell cell;
     public int bombNumber;
@@ -9,9 +11,8 @@ public class Player {
     public int bombScope;
     public int speedCount;
     public float initialSpeed;
-    public UIController uiCont;
     public int playerIndex;
-    public bool live;
+    public PlayerState playerState;
 
     private const float centerMargin = 0.05f;
     private Cell nextCell;
@@ -25,7 +26,7 @@ public class Player {
 
     public Player(int index) {
         playerIndex = index;
-        live = true;
+        playerState = PlayerState.Start;
     }
 
     public void Restart(Cell cell) {
@@ -42,14 +43,16 @@ public class Player {
 
         Vector3 pos = cell.position;
         pos.y = go.transform.localScale.y;
+        playerState = PlayerState.Play;
         pc.RpcPosition(pos, true);
-        pc.RpcSetActive(true);
+        pc.RpcSetState(playerState);
         position = pos;
     }
 
     public void SetGO(GameObject go) {
         this.go = go;
         pc = go.GetComponent<PlayerController>();
+        pc.RpcSetPlayerIndex(playerIndex);
     }
 
     public void Move(Side sideTry) {
@@ -183,14 +186,13 @@ public class Player {
 
     public void UpdateUI()
     {
-        pc.uIController.bombLabel.text = "= " + (this.bombNumber - this.bombUsed) + "/" + this.bombNumber;
-        pc.uIController.fireLabel.text = "= " + this.bombScope;
-        pc.uIController.speedLabel.text = "= " + this.speedCount;
+        pc.RpcUpdateUI(bombNumber - bombUsed, bombNumber, bombScope, speedCount);
     }
 
     public void BombImpact() {
-        live = false;
         ChangePosition(new Vector3(1000f, 0, 1000f), true);
-        pc.RpcSetActive(false);
+
+        playerState = PlayerState.Over;
+        pc.RpcSetState(playerState);
     }
 }

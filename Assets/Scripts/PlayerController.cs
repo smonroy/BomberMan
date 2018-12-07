@@ -2,32 +2,41 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class PlayerController : NetworkBehaviour {
 
     public GameObject bombPrefab;
     public UIController uIController;
+    public GameObject canvasPrefab;
+    public Color[] playerColor;
+    public PlayerState playerState;
 
     private Player player;
     private Side currentSide;
     private Side previousSide;
     private Map map;
-    private bool active;
+    private int playerIndex;
+    //private GameObject canvas;
 
     // Use this for initialization
     void Start () {
         currentSide = Side.Other;
         previousSide = currentSide;
+        playerState = PlayerState.Start;
+        uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
         if(isServer) {
             map = GameObject.FindWithTag("Map").GetComponent<Map>();
             player = map.GetNewPlayer(this.gameObject);
-            uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
+        } 
+        if(isLocalPlayer) {
+            GameObject.FindWithTag("MainCamera").gameObject.GetComponent<CameraScript>().SetPlayer(gameObject);
         }
     }
 
-    public override void OnStartLocalPlayer() {
-        GetComponent<MeshRenderer>().material.color = Color.red;
-    }
+    //public override void OnStartLocalPlayer() {
+    //    GetComponent<MeshRenderer>().material.color = Color.red;
+    //}
 
     // Update is called once per frame
     void Update () {
@@ -35,7 +44,7 @@ public class PlayerController : NetworkBehaviour {
             return;
         }
 
-        if(!active) {
+        if(playerState != PlayerState.Play) {
             return;
         }
 
@@ -125,8 +134,8 @@ public class PlayerController : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcSetActive(bool active) {
-        this.active = active;
+    public void RpcSetState(PlayerState state) {
+        playerState = state;
     }
 
     [Command]
@@ -144,6 +153,19 @@ public class PlayerController : NetworkBehaviour {
             case Side.Left:     angle = 270; break;
         }
         transform.eulerAngles = new Vector3(0, angle, 0);
+    }
+
+    [ClientRpc]
+    public void RpcUpdateUI(int bombAvailable, int bombTotal, int bombScope, int speedCount) {
+        uIController.bombLabel.text = "= " + bombAvailable + "/" + bombTotal;
+        uIController.fireLabel.text = "= " + bombScope;
+        uIController.speedLabel.text = "= " + speedCount;
+    }
+
+    [ClientRpc]
+    public void RpcSetPlayerIndex(int index) {
+        playerIndex = index;
+        GetComponent<MeshRenderer>().material.color = playerColor[playerIndex];
     }
 
 }
