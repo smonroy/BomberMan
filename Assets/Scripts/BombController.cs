@@ -13,12 +13,13 @@ public class BombController : NetworkBehaviour {
     public GameObject firePrefab;
 
     private float timeToExploit;
+    private Map map;
 
 	// Use this for initialization
 	void Start () {
         timeToExploit = Time.time + secondsToExploit;
         exploting = false;
-
+        map = GameObject.FindWithTag("Map").GetComponent<Map>();
     }
 	
 	// Update is called once per frame
@@ -52,6 +53,9 @@ public class BombController : NetworkBehaviour {
                         c.BombImpact();
                         break;
                     }
+                    foreach(Player p in map.GetPlayersInCell(c)) {
+                        p.BombImpact();
+                    }
                     if (c.bomb != null) {
                         BombController bc = c.bomb.GetComponent<BombController>();
                         if (!bc.exploting) {
@@ -69,7 +73,7 @@ public class BombController : NetworkBehaviour {
                 }
             }
             player.bombUsed--;
-            player.updateUI();
+            player.UpdateUI();
 
             var fire1 = Instantiate(firePrefab, transform.position, Quaternion.identity);
             fire1.transform.Rotate(Vector3.right, -90);

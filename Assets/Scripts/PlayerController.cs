@@ -12,6 +12,7 @@ public class PlayerController : NetworkBehaviour {
     private Side currentSide;
     private Side previousSide;
     private Map map;
+    private bool active;
 
     // Use this for initialization
     void Start () {
@@ -31,6 +32,10 @@ public class PlayerController : NetworkBehaviour {
     // Update is called once per frame
     void Update () {
         if (!isLocalPlayer) {
+            return;
+        }
+
+        if(!active) {
             return;
         }
 
@@ -117,6 +122,11 @@ public class PlayerController : NetworkBehaviour {
         } else {
             transform.position += pos;
         }
+    }
+
+    [ClientRpc]
+    public void RpcSetActive(bool active) {
+        this.active = active;
     }
 
     [Command]

@@ -10,9 +10,12 @@ public class Player {
     public int speedCount;
     public float initialSpeed;
     public UIController uiCont;
+    public int playerIndex;
+    public bool live;
 
     private const float centerMargin = 0.05f;
     private Cell nextCell;
+    private GameObject go;
     private PlayerController pc;
     private Side currentSide;
     private float currentSpeed;
@@ -20,7 +23,12 @@ public class Player {
     private float maximunSpeed;
     private Vector3 position;
 
-    public Player(Cell cell) {
+    public Player(int index) {
+        playerIndex = index;
+        live = true;
+    }
+
+    public void Restart(Cell cell) {
         this.cell = cell;
         nextCell = null;
         bombUsed = 0;
@@ -31,11 +39,17 @@ public class Player {
         incrementsSpeed = 0.1f;
         maximunSpeed = 1.4f;
         currentSpeed = initialSpeed;
+
+        Vector3 pos = cell.position;
+        pos.y = go.transform.localScale.y;
+        pc.RpcPosition(pos, true);
+        pc.RpcSetActive(true);
+        position = pos;
     }
 
     public void SetGO(GameObject go) {
+        this.go = go;
         pc = go.GetComponent<PlayerController>();
-        position = go.transform.position;
     }
 
     public void Move(Side sideTry) {
@@ -140,7 +154,7 @@ public class Player {
         bc.player = this;
         bc.maxScope = bombScope;
         bombUsed++;
-        updateUI();
+        UpdateUI();
     }
 
     public void TakeItem() {
@@ -158,20 +172,25 @@ public class Player {
                     currentSpeed += incrementsSpeed;
                     speedCount++;
                     pc.uIController.speedUp.Play();
-                    Debug.Log(currentSpeed);
                 }
                 break;
         }
-        updateUI();
+        UpdateUI();
         cell.itemType = ItemType.nothing;
         cell.item.GetComponent<ItemController>().Destroy();
         cell.item = null;
     }
 
-    public void updateUI()
+    public void UpdateUI()
     {
         pc.uIController.bombLabel.text = "= " + (this.bombNumber - this.bombUsed) + "/" + this.bombNumber;
         pc.uIController.fireLabel.text = "= " + this.bombScope;
         pc.uIController.speedLabel.text = "= " + this.speedCount;
+    }
+
+    public void BombImpact() {
+        live = false;
+        ChangePosition(new Vector3(1000f, 0, 1000f), true);
+        pc.RpcSetActive(false);
     }
 }

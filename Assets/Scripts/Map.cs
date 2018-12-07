@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+public enum GameState { Start, Play, Over }
+
 public class Map : NetworkBehaviour {
 
     public Vector2 mapCenter;
     public GameObject[] cellPrefabs;
     public GameObject playerPrefab;
 
+    public GameState gameState;
+
     private Vector2 cellSize;
-    private bool irregular;
-    private int mapRadio;
-    private int minTouchPoints;
+    //private bool irregular;
+    //private int mapRadio;
+    //private int minTouchPoints;
     private Vector2 mapSize;
     private Vector2 spawnPointsMargen; // from the corner;
     private Cell[,] map;
@@ -23,15 +27,54 @@ public class Map : NetworkBehaviour {
 
 
     public override void OnStartServer() {
+        gameState = GameState.Start;
         cellSize = new Vector2(1f, 1f);
-        mapRadio = 3;
-        minTouchPoints = 2;
-        irregular = false;
+        //mapRadio = 3;
+        //minTouchPoints = 2;
+        //irregular = false;
 
+//        BuildMap(3, false, 2);
+        /////
+        //mapSize = new Vector2(mapRadio * 4 + 3, mapRadio * 4 + 3);
+        //spawnPointsMargen = new Vector2(1, 1);
+
+        //MapInit(irregular);
+        //LinkCells();
+        //SetSpawnPoints();
+
+        //if (irregular) {
+        //    BuildMap(minTouchPoints);
+        //}
+
+        //DetectBorder();
+        //DetectIndestructibleCells();
+
+        //KeyValuePair<ItemType, int>[] items = new KeyValuePair<ItemType, int>[3];
+        //items[0] = new KeyValuePair<ItemType, int>(ItemType.bombUp, 20);
+        //items[1] = new KeyValuePair<ItemType, int>(ItemType.speedUp, 20);
+        //items[2] = new KeyValuePair<ItemType, int>(ItemType.scopeUp, 20);
+
+
+        //SetDestructibleCells(70, items);
+        //ShowMap();
+        ////
+
+        numPlayers = 0;
+        players = new Player[4];
+
+        //Transform[] allChildren = GetComponentsInChildren<Transform>();
+        //foreach (Transform child in allChildren) {
+        //    if (child.tag != "StartPosition") {
+        //        NetworkServer.Spawn(child.gameObject);
+        //    }
+        //}
+    }
+
+    public void BuildMap(int mapRadio, bool irregular, int minTouchPoints) {
         mapSize = new Vector2(mapRadio * 4 + 3, mapRadio * 4 + 3);
         spawnPointsMargen = new Vector2(1, 1);
 
-        MapInit();
+        MapInit(irregular);
         LinkCells();
         SetSpawnPoints();
 
@@ -47,13 +90,8 @@ public class Map : NetworkBehaviour {
         items[1] = new KeyValuePair<ItemType, int>(ItemType.speedUp, 20);
         items[2] = new KeyValuePair<ItemType, int>(ItemType.scopeUp, 20);
 
-
         SetDestructibleCells(70, items);
-
         ShowMap();
-
-        numPlayers = 0;
-        players = new Player[4];
 
         Transform[] allChildren = GetComponentsInChildren<Transform>();
         foreach (Transform child in allChildren) {
@@ -61,10 +99,25 @@ public class Map : NetworkBehaviour {
                 NetworkServer.Spawn(child.gameObject);
             }
         }
+
+        foreach(Player player in players) {
+            if(player != null) {
+                player.Restart(spawnCells[player.playerIndex]);
+            }
+        }
     }
 
 
-    private void MapInit() {
+    public Player GetNewPlayer(GameObject go) {
+        // Player player = new Player(spawnCells[numPlayers]);
+        Player player = new Player(numPlayers);
+        players[numPlayers] = player;
+        numPlayers++;
+        player.SetGO(go);
+        return player;
+    }
+
+    private void MapInit(bool irregular) {
         map = new Cell[(int)mapSize.x, (int)mapSize.y];
         cells = new List<Cell>();
         for (int xi = 0; xi < mapSize.x; xi++) {
@@ -93,15 +146,6 @@ public class Map : NetworkBehaviour {
             }
         }
     }
-
-    public Player GetNewPlayer(GameObject go) {
-        Player player = new Player(spawnCells[numPlayers]);
-        players[numPlayers] = player;
-        numPlayers++;
-        player.SetGO(go);
-        return player;
-    }
-
 
     private void LinkCells() {
         for (int xi = 0; xi < mapSize.x; xi++) {
@@ -251,6 +295,18 @@ public class Map : NetworkBehaviour {
         result.Add(map[(int)mapSize.y - y - 1, (int)mapSize.x - x - 1]);
         result.Add(map[(int)mapSize.x - x - 1, (int)mapSize.y - y - 1]);
         return result;
+    }
+
+    public Player[] GetPlayersInCell(Cell cell) {
+        List<Player> result = new List<Player>();
+        foreach(Player player in players) {
+            if(player != null) {
+                if(player.cell == cell) {
+                    result.Add(player);
+                }
+            }
+        }
+        return result.ToArray();
     }
 
 }
