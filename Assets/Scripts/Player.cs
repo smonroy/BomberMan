@@ -7,16 +7,18 @@ public class Player {
     public int bombNumber;
     public int bombUsed;
     public int bombScope;
+    public int speedCount;
     public float initialSpeed;
+    public UIController uiCont;
 
     private const float centerMargin = 0.05f;
-    private GameObject go;
     private Cell nextCell;
     private PlayerController pc;
     private Side currentSide;
     private float currentSpeed;
     private float incrementsSpeed;
     private float maximunSpeed;
+    private Vector3 position;
 
     public Player(Cell cell) {
         this.cell = cell;
@@ -24,19 +26,20 @@ public class Player {
         bombUsed = 0;
         bombNumber = 1;
         bombScope = 1;
+        speedCount = 1;
         initialSpeed = 0.6f;
         incrementsSpeed = 0.1f;
         maximunSpeed = 1.4f;
         currentSpeed = initialSpeed;
-
     }
 
     public void SetGO(GameObject go) {
-        this.go = go;
         pc = go.GetComponent<PlayerController>();
+        position = go.transform.position;
     }
 
     public void Move(Side sideTry) {
+
         if (nextCell == null) { // is in the center of a cell
             if (CellIsWalkable(cell.sides[(int)sideTry])) {
                 nextCell = cell.sides[(int)sideTry];
@@ -45,74 +48,62 @@ public class Player {
         }
 
         if (nextCell != null) {
-            Vector3 direction = nextCell.position - go.transform.position;
-            direction.y = 0;
-            Vector3 directionSpeed = direction.normalized * currentSpeed / 10;
+            Vector3 forward = nextCell.position - position;
+            forward.y = 0;
+            forward = forward.normalized * currentSpeed / 10f;
+            Vector3 backward = cell.position - position;
+            backward.y = 0;
+
             if (currentSide == sideTry) { // go away from the center
-                go.transform.position += directionSpeed;
+                ChangePosition(forward, false);
             } else {
                 if (CellIsWalkable(cell.sides[(int)sideTry]) || sideTry == GetOppositeSide(currentSide)) { // closing to the center to change of direction or walking directly to the center
-                    if (directionSpeed.magnitude < direction.magnitude || sideTry == GetOppositeSide(currentSide)) {
-                        go.transform.position -= directionSpeed;
-                        if(directionSpeed.magnitude > direction.magnitude && sideTry == GetOppositeSide(currentSide)) {
+                    if (forward.magnitude < backward.magnitude || (sideTry == GetOppositeSide(currentSide) && CellIsWalkable(cell.sides[(int)sideTry]))) {
+                        ChangePosition(-forward, false); // full movement
+                        if(forward.magnitude > backward.magnitude) {
                             nextCell = cell.sides[(int)sideTry];
                             currentSide = sideTry;
                         }
                     } else {
-                        go.transform.position -= direction;
+                        ChangePosition(backward, false); // limited movement
                     }
                 } else {
-                    if (CellIsWalkable(nextCell.sides[(int)sideTry])) { // go back to the previous cell to change direction
-                        go.transform.position += directionSpeed;
+                    if (CellIsWalkable(nextCell.sides[(int)sideTry])) { // go to the nextcell cell to change direction
+                        ChangePosition(forward, false);
                     }
                 }
             }
 
             // switch cell and nextCell
-            if (Vector3.Magnitude(nextCell.position - go.transform.position) < Vector3.Magnitude(cell.position - go.transform.position)) {
+            if (Vector3.Magnitude(nextCell.position - position) < Vector3.Magnitude(cell.position - position)) {
                 var tmpCell = cell;
                 cell = nextCell;
                 nextCell = tmpCell;
                 currentSide = GetOppositeSide(currentSide);
-                if(cell.item != null) {
+                if (cell.item != null) {
                     TakeItem();
                 }
             }
 
-            Vector3 distance = go.transform.position - cell.position;
+            Vector3 distance = position - cell.position;
             distance.y = 0;
             if (distance.magnitude <= centerMargin && currentSide != sideTry) {
-                go.transform.position = new Vector3(cell.position.x, go.transform.position.y, cell.position.z);
+                Vector3 pos = new Vector3(cell.position.x, position.y, cell.position.z);
+                ChangePosition(pos, true);
                 nextCell = null;
             }
+
         }
 
     }
 
-    public Side GetSide(Vector2 movement)
-    {
-        if (Mathf.Abs(movement.x) > Mathf.Abs(movement.y))
-        {
-            if (movement.x > 0) {
-                return Side.Right;
-            } else {
-                return Side.Left;
-            }
+    public void ChangePosition(Vector3 pos, bool absolute) {
+        if (absolute) {
+            position = pos;
         } else {
-            if (movement.y < 0) {
-                return Side.Up;
-            } else {
-                return Side.Down;
-            }
+            position += pos;
         }
-    }
-
-    public float GetMagnitud(Vector2 movement) {
-        if (Mathf.Abs(movement.x) > Mathf.Abs(movement.y)) {
-            return movement.x;
-        } else {
-            return movement.y;
-        }
+        pc.RpcPosition(pos, absolute);
     }
 
     Side GetOppositeSide(Side side) {
@@ -149,25 +140,38 @@ public class Player {
         bc.player = this;
         bc.maxScope = bombScope;
         bombUsed++;
+        updateUI();
     }
 
     public void TakeItem() {
         switch (cell.itemType) {
             case ItemType.bombUp:
                 bombNumber++;
+                pc.uIController.bombUp.Play();
                 break;
             case ItemType.scopeUp:
                 bombScope++;
+                pc.uIController.rangeUp.Play();
                 break;
             case ItemType.speedUp:
                 if(currentSpeed + incrementsSpeed <= maximunSpeed) {
                     currentSpeed += incrementsSpeed;
+                    speedCount++;
+                    pc.uIController.speedUp.Play();
                     Debug.Log(currentSpeed);
                 }
                 break;
         }
+        updateUI();
         cell.itemType = ItemType.nothing;
         cell.item.GetComponent<ItemController>().Destroy();
         cell.item = null;
+    }
+
+    public void updateUI()
+    {
+        pc.uIController.bombLabel.text = "= " + (this.bombNumber - this.bombUsed) + "/" + this.bombNumber;
+        pc.uIController.fireLabel.text = "= " + this.bombScope;
+        pc.uIController.speedLabel.text = "= " + this.speedCount;
     }
 }
