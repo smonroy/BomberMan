@@ -14,9 +14,6 @@ public class Map : NetworkBehaviour {
     public GameState gameState;
 
     private Vector2 cellSize;
-    //private bool irregular;
-    //private int mapRadio;
-    //private int minTouchPoints;
     private Vector2 mapSize;
     private Vector2 spawnPointsMargen; // from the corner;
     private Cell[,] map;
@@ -29,45 +26,9 @@ public class Map : NetworkBehaviour {
     public override void OnStartServer() {
         gameState = GameState.Start;
         cellSize = new Vector2(1f, 1f);
-        //mapRadio = 3;
-        //minTouchPoints = 2;
-        //irregular = false;
-
-//        BuildMap(3, false, 2);
-        /////
-        //mapSize = new Vector2(mapRadio * 4 + 3, mapRadio * 4 + 3);
-        //spawnPointsMargen = new Vector2(1, 1);
-
-        //MapInit(irregular);
-        //LinkCells();
-        //SetSpawnPoints();
-
-        //if (irregular) {
-        //    BuildMap(minTouchPoints);
-        //}
-
-        //DetectBorder();
-        //DetectIndestructibleCells();
-
-        //KeyValuePair<ItemType, int>[] items = new KeyValuePair<ItemType, int>[3];
-        //items[0] = new KeyValuePair<ItemType, int>(ItemType.bombUp, 20);
-        //items[1] = new KeyValuePair<ItemType, int>(ItemType.speedUp, 20);
-        //items[2] = new KeyValuePair<ItemType, int>(ItemType.scopeUp, 20);
-
-
-        //SetDestructibleCells(70, items);
-        //ShowMap();
-        ////
 
         numPlayers = 0;
         players = new Player[4];
-
-        //Transform[] allChildren = GetComponentsInChildren<Transform>();
-        //foreach (Transform child in allChildren) {
-        //    if (child.tag != "StartPosition") {
-        //        NetworkServer.Spawn(child.gameObject);
-        //    }
-        //}
     }
 
     public void BuildMap(int mapRadio, bool irregular, int minTouchPoints) {
@@ -85,12 +46,14 @@ public class Map : NetworkBehaviour {
         DetectBorder();
         DetectIndestructibleCells();
 
-        KeyValuePair<ItemType, int>[] items = new KeyValuePair<ItemType, int>[3];
-        items[0] = new KeyValuePair<ItemType, int>(ItemType.bombUp, 20);
-        items[1] = new KeyValuePair<ItemType, int>(ItemType.speedUp, 20);
-        items[2] = new KeyValuePair<ItemType, int>(ItemType.scopeUp, 20);
 
+        KeyValuePair<ItemType, int>[] items = {
+            new KeyValuePair<ItemType, int>(ItemType.bombUp, 20),
+            new KeyValuePair<ItemType, int>(ItemType.speedUp, 20),
+            new KeyValuePair<ItemType, int>(ItemType.scopeUp, 20)
+        };
         SetDestructibleCells(70, items);
+
         ShowMap();
 
         Transform[] allChildren = GetComponentsInChildren<Transform>();
@@ -107,9 +70,7 @@ public class Map : NetworkBehaviour {
         }
     }
 
-
     public Player GetNewPlayer(GameObject go) {
-        // Player player = new Player(spawnCells[numPlayers]);
         Player player = new Player(numPlayers);
         players[numPlayers] = player;
         numPlayers++;
@@ -205,23 +166,20 @@ public class Map : NetworkBehaviour {
         }
     }
 
-    private void SetDestructibleCells(float probability, KeyValuePair<ItemType, int>[] itemsNumbers) {
-        int i = 0;
-        int v = 0;
-        foreach(Cell cell in cells) {
+    private void SetDestructibleCells(float probability, KeyValuePair<ItemType, int>[] itemsProbability) {
+        foreach (Cell cell in cells) {
             if (cell.GetCellType() == CellType.Walkable) {
                 if (!cell.spawnPoint && !cell.IsNextToSpawnPoint()) {
                     if (Random.Range(0f, 100f) <= probability) {
                         cell.SetCellType(CellType.Destructible);
-                        if (i < itemsNumbers.Length) {
-                            if (v < itemsNumbers[i].Value) {
-                                cell.itemType = itemsNumbers[i].Key;
-                                v++;
-                                if (v >= itemsNumbers[i].Value) { // next item type
-                                    i++;
-                                    v = 0;
-                                }
+
+                        int itemRandom = Random.Range(0, 100);
+                        for (int i = 0; i < itemsProbability.Length; i++) {
+                            if(itemRandom <= itemsProbability[i].Value) {
+                                cell.itemType = itemsProbability[i].Key;
+                                break;
                             }
+                            itemRandom -= itemsProbability[i].Value;
                         }
                     }
                 }
@@ -280,7 +238,6 @@ public class Map : NetworkBehaviour {
         }
         return null;
     }
-
 
     private List<Cell> GetMirrorCells(Cell cell) {
         List<Cell> result = new List<Cell>();
