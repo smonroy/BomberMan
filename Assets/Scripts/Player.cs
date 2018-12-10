@@ -13,10 +13,10 @@ public class Player {
     public float initialSpeed;
     public int playerIndex;
     public PlayerState playerState;
+    public GameObject go;
 
     private const float centerMargin = 0.05f;
     private Cell nextCell;
-    private GameObject go;
     private PlayerController pc;
     private Side currentSide;
     private float currentSpeed;
@@ -194,5 +194,9 @@ public class Player {
 
         playerState = PlayerState.Over;
         pc.RpcSetState(playerState);
+    }
+
+    public void DestroyPlayer() {
+        pc.RpcDestroy();
     }
 }

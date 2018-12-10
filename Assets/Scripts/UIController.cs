@@ -27,13 +27,6 @@ public class UIController : MonoBehaviour {
     void Start () {
         backgroundMusic.Play();
         backgroundMusic.loop = true;
-//        this.player.gameObject.SetActive(true);
-//        this.itemUI.gameObject.SetActive(true);
     }
-
-    //public override void OnStartClient() {
-    //    base.OnStartClient();
-    //    startButton.gameObject.SetActive(false);
-    //}
 
 }

@@ -21,11 +21,12 @@ public class Map : NetworkBehaviour {
     private Cell[] spawnCells;
     private Player[] players;
     private int numPlayers;
-
+    private NetworkManager networkManager;
 
     public override void OnStartServer() {
         gameState = GameState.Start;
         cellSize = new Vector2(1f, 1f);
+        networkManager = FindObjectOfType<NetworkManager>().GetComponent<NetworkManager>();
 
         numPlayers = 0;
         players = new Player[4];
@@ -68,14 +69,39 @@ public class Map : NetworkBehaviour {
                 player.Restart(spawnCells[player.playerIndex]);
             }
         }
+        networkManager.maxConnections = numPlayers;
     }
 
     public Player GetNewPlayer(GameObject go) {
-        Player player = new Player(numPlayers);
-        players[numPlayers] = player;
-        numPlayers++;
-        player.SetGO(go);
-        return player;
+        if(numPlayers < 3) {
+            int rndPlayer = Random.Range(0, 4);
+            int i = 0;
+            int playerIndex = (rndPlayer + i) % 4;
+            while (players[playerIndex] != null) {
+                i++;
+                playerIndex = (rndPlayer + i) % 4;
+            }
+            Player player = new Player(playerIndex);
+            players[playerIndex] = player;
+            numPlayers++;
+            player.SetGO(go);
+            return player;
+        } else {
+            return null;
+        }
+    }
+
+    public void OnPlayerDisconnected(NetworkIdentity playerIdentity) {
+        for(int i = 0; i < 4; i++) {
+            if(players[i].go.GetComponent<NetworkIdentity>().netId == playerIdentity.netId) {
+                players[i].DestroyPlayer();
+                players[i] = null;
+            }
+            numPlayers--;
+            if(gameState != GameState.Start) {
+                networkManager.maxConnections = numPlayers;
+            }
+        }
     }
 
     private void MapInit(bool irregular) {

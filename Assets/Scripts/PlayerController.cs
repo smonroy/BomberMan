@@ -8,16 +8,21 @@ public class PlayerController : NetworkBehaviour {
 
     public GameObject bombPrefab;
     public UIController uIController;
-    public GameObject canvasPrefab;
     public Color[] playerColor;
     public PlayerState playerState;
+    public Sprite[] faces;
 
     private Player player;
     private Side currentSide;
     private Side previousSide;
     private Map map;
     private int playerIndex;
-    //private GameObject canvas;
+
+    private GameObject canvas;
+    private Text bombsText;
+    private Text speedText;
+    private Text fireText;
+    private Image face;
 
     // Use this for initialization
     void Start () {
@@ -25,18 +30,22 @@ public class PlayerController : NetworkBehaviour {
         previousSide = currentSide;
         playerState = PlayerState.Start;
         uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
-        if(isServer) {
+        canvas = transform.GetChild(2).gameObject;
+        bombsText = canvas.transform.GetChild(0).GetChild(0).GetChild(1).GetComponent<Text>();
+        speedText = canvas.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
+        fireText = canvas.transform.GetChild(0).GetChild(2).GetChild(1).GetComponent<Text>();
+        face = canvas.transform.GetChild(1).GetComponent<Image>();
+
+        if (isServer) {
             map = GameObject.FindWithTag("Map").GetComponent<Map>();
             player = map.GetNewPlayer(this.gameObject);
         } 
         if(isLocalPlayer) {
             GameObject.FindWithTag("MainCamera").gameObject.GetComponent<CameraScript>().SetPlayer(gameObject);
+        } else {
+            canvas.SetActive(false);
         }
     }
-
-    //public override void OnStartLocalPlayer() {
-    //    GetComponent<MeshRenderer>().material.color = Color.red;
-    //}
 
     // Update is called once per frame
     void Update () {
@@ -44,48 +53,48 @@ public class PlayerController : NetworkBehaviour {
             return;
         }
 
-        if(playerState != PlayerState.Play) {
-            return;
-        }
+        switch (playerState) {
+            case PlayerState.Play:
+                Side newSide = Side.Other;
+                bool isPrevious = false;
+                bool isCurrent = false;
+                bool isNew = false;
 
-        Side newSide = Side.Other;
-        bool isPrevious = false;
-        bool isCurrent = false;
-        bool isNew = false;
-
-        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) {
-            CompareKey(Side.Down, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
-        } 
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) {
-            CompareKey(Side.Up, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
-        }
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) {
-            CompareKey(Side.Left, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
-        }
-        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) {
-            CompareKey(Side.Right, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
-        }
-
-        if(isNew) {
-            if(isCurrent) {
-                previousSide = currentSide;
-            }
-            currentSide = newSide;
-            CmdSetRotation(currentSide);
-        } else {
-            if(!isCurrent) {
-                currentSide = previousSide;
-                if (currentSide != Side.Other) {
-                    CmdSetRotation(currentSide);
+                if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) {
+                    CompareKey(Side.Down, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
                 }
-            }
-            if(!isPrevious) {
-                previousSide = Side.Other;
-            }
-        }
+                if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) {
+                    CompareKey(Side.Up, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
+                }
+                if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) {
+                    CompareKey(Side.Left, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
+                }
+                if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) {
+                    CompareKey(Side.Right, ref isNew, ref isCurrent, ref isPrevious, ref newSide);
+                }
 
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            CmdPutBomb();
+                if (isNew) {
+                    if (isCurrent) {
+                        previousSide = currentSide;
+                    }
+                    currentSide = newSide;
+                    CmdSetRotation(currentSide);
+                } else {
+                    if (!isCurrent) {
+                        currentSide = previousSide;
+                        if (currentSide != Side.Other) {
+                            CmdSetRotation(currentSide);
+                        }
+                    }
+                    if (!isPrevious) {
+                        previousSide = Side.Other;
+                    }
+                }
+
+                if (Input.GetKeyDown(KeyCode.Space)) {
+                    CmdPutBomb();
+                }
+                break;
         }
     }
 
@@ -101,8 +110,15 @@ public class PlayerController : NetworkBehaviour {
     }
 
     void FixedUpdate() {
-        if (currentSide != Side.Other) {
-            CmdMove(currentSide);
+        switch (playerState) {
+            case PlayerState.Play:
+                if (currentSide != Side.Other) {
+                    CmdMove(currentSide);
+                }
+                break;
+            case PlayerState.Start:
+                transform.localEulerAngles += new Vector3(0f, 1f, 0f);
+                break;
         }
     }
 
@@ -157,15 +173,20 @@ public class PlayerController : NetworkBehaviour {
 
     [ClientRpc]
     public void RpcUpdateUI(int bombAvailable, int bombTotal, int bombScope, int speedCount) {
-        uIController.bombLabel.text = "= " + bombAvailable + "/" + bombTotal;
-        uIController.fireLabel.text = "= " + bombScope;
-        uIController.speedLabel.text = "= " + speedCount;
+        bombsText.text = "= " + bombAvailable + "/" + bombTotal;
+        speedText.text = "= " + speedCount;
+        fireText.text = "= " + bombScope;
     }
 
     [ClientRpc]
     public void RpcSetPlayerIndex(int index) {
         playerIndex = index;
         GetComponent<MeshRenderer>().material.color = playerColor[playerIndex];
+        face.sprite = faces[playerIndex];
     }
 
+    [ClientRpc]
+    public void RpcDestroy() {
+        Destroy(this);
+    }
 }
