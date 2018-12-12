@@ -25,20 +25,22 @@ public class PlayerController : NetworkBehaviour {
     private Text speedText;
     private Text fireText;
     private Image face;
-    private int faceNum;
 
-    // Use this for initialization
-    void Start () {
-        faceNum = -1;
-        currentSide = Side.Other;
-        previousSide = currentSide;
-        playerState = PlayerState.Start;
+    public override void PreStartClient() {
+        base.PreStartClient();
         uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
         canvas = transform.GetChild(2).gameObject;
         bombsText = canvas.transform.GetChild(0).GetChild(0).GetChild(1).GetComponent<Text>();
         speedText = canvas.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
         fireText = canvas.transform.GetChild(0).GetChild(2).GetChild(1).GetComponent<Text>();
         face = canvas.transform.GetChild(1).GetComponent<Image>();
+    }
+
+    // Use this for initialization
+    void Start () {
+        currentSide = Side.Other;
+        previousSide = currentSide;
+        playerState = PlayerState.Start;
 
         if (isServer) {
             map = GameObject.FindWithTag("Map").GetComponent<Map>();
@@ -62,17 +64,11 @@ public class PlayerController : NetworkBehaviour {
         base.OnStartClient();
     }
 
+
     // Update is called once per frame
     void Update () {
         if (!isLocalPlayer) {
             return;
-        }
-
-        if(face) {
-            if(faceNum != playerIndex) {
-                faceNum = playerIndex;
-                face.sprite = faces[faceNum];
-            }
         }
 
         switch (playerState) {
@@ -141,6 +137,9 @@ public class PlayerController : NetworkBehaviour {
             case PlayerState.Start:
                 transform.localEulerAngles += new Vector3(0f, 1f, 0f);
                 break;
+            case PlayerState.Over:
+                transform.localEulerAngles += new Vector3(0f, 1f, 0f);
+                break;
         }
     }
 
@@ -203,6 +202,10 @@ public class PlayerController : NetworkBehaviour {
     [ClientRpc]
     public void RpcSetPlayerIndex(int index) {
         playerIndex = index;
+        Vector3 pos = transform.position;
+        pos.x = -3 + (playerIndex * 2);
+        transform.position = pos;
         GetComponent<MeshRenderer>().material.color = playerColor[playerIndex];
+        face.sprite = faces[playerIndex];
     }
 }

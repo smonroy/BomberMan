@@ -14,6 +14,7 @@ public class Player {
     public int playerIndex;
     public PlayerState playerState;
     public GameObject go;
+    public int score;
 
     private const float centerMargin = 0.05f;
     private Cell nextCell;
@@ -23,13 +24,18 @@ public class Player {
     private float incrementsSpeed;
     private float maximunSpeed;
     private Vector3 position;
+    private Map map;
+    private Vector3 initialPosition;
+
 
     public Player(int index) {
         playerIndex = index;
+        score = 0;
         playerState = PlayerState.Start;
+        map = GameObject.FindWithTag("Map").GetComponent<Map>();
     }
 
-    public void Restart(Cell cell) {
+    public void StartPlayer(Cell cell) {
         this.cell = cell;
         nextCell = null;
         bombUsed = 0;
@@ -40,6 +46,8 @@ public class Player {
         incrementsSpeed = 0.1f;
         maximunSpeed = 1.4f;
         currentSpeed = initialSpeed;
+
+        initialPosition = pc.transform.position;
 
         Vector3 pos = cell.position;
         pos.y = go.transform.localScale.y;
@@ -190,8 +198,12 @@ public class Player {
     }
 
     public void BombImpact() {
-        ChangePosition(new Vector3(1000f, 0, 1000f), true);
+        ReturnPlayer();
+        map.PlayerDead(playerIndex);
+    }
 
+    public void ReturnPlayer() {
+        ChangePosition(initialPosition, true);
         playerState = PlayerState.Over;
         pc.RpcSetState(playerState);
     }

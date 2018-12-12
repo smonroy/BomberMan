@@ -7,22 +7,25 @@ public class GameController : NetworkBehaviour {
 
     public GameObject mapPrefab;
 
-    private UIController uIController;
     private Map map;
 
     public override void OnStartServer() {
         var mapGO = Instantiate(mapPrefab);
         mapGO.transform.name = "Map";
-        uIController = GameObject.FindWithTag("UIController").GetComponent<UIController>();
         map = mapGO.GetComponent<Map>();
         NetworkServer.Spawn(mapGO);
     }
 
-    public void StartGame() {
-        if(isServer) {
-            map.BuildMap(3, false, 2);
-            // map.BuildMap(7, true, 2);
-            uIController.startButton.gameObject.SetActive(false);
+    public void StartGame(int mapNumber) {
+        if (isServer) {
+            switch (mapNumber) {
+                case 1:
+                    map.BuildMap(3, false, 2);
+                    break;
+                case 2:
+                    map.BuildMap(7, true, 2);
+                    break;
+            }
         }
     }
 }

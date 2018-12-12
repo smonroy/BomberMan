@@ -26,6 +26,13 @@ public class CameraScript : MonoBehaviour {
             }
             switch (pc.playerState) {
                 case PlayerState.Start:
+                    if (!isInStartPosition) {
+                        isInStartPosition = true;
+                        transform.position = startPosition;
+                        transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                    }
+                    break;
+                case PlayerState.Over:
                     if(!isInStartPosition) {
                         isInStartPosition = true;
                         transform.position = startPosition;

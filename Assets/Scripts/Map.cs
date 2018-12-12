@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public enum GameState { Start, Play, Over }
 
@@ -22,11 +23,14 @@ public class Map : NetworkBehaviour {
     private Player[] players;
     private int numPlayers;
     private NetworkManager networkManager;
+    private int numPlayersPlaying;
+    private GameObject canvasServer;
 
     public override void OnStartServer() {
         gameState = GameState.Start;
         cellSize = new Vector2(1f, 1f);
         networkManager = FindObjectOfType<NetworkManager>().GetComponent<NetworkManager>();
+        canvasServer = GameObject.Find("CanvasServer");
 
         numPlayers = 0;
         players = new Player[] {null, null, null, null};
@@ -55,21 +59,25 @@ public class Map : NetworkBehaviour {
         };
         SetDestructibleCells(70, items);
 
+        foreach (Transform child in transform) {
+            Destroy(child.gameObject);
+        }
+
         ShowMap();
 
         Transform[] allChildren = GetComponentsInChildren<Transform>();
         foreach (Transform child in allChildren) {
-            if (child.tag != "StartPosition") {
-                NetworkServer.Spawn(child.gameObject);
-            }
+            NetworkServer.Spawn(child.gameObject);
         }
 
         foreach(Player player in players) {
             if(player != null) {
-                player.Restart(spawnCells[player.playerIndex]);
+                player.StartPlayer(spawnCells[player.playerIndex]);
             }
         }
         networkManager.maxConnections = numPlayers;
+        numPlayersPlaying = numPlayers;
+        canvasServer.SetActive(false);
     }
 
     public Player GetNewPlayer(GameObject go) {
@@ -285,6 +293,26 @@ public class Map : NetworkBehaviour {
             }
         }
         return result.ToArray();
+    }
+
+    public void PlayerDead(int index) {
+        numPlayersPlaying--;
+        if(numPlayersPlaying <= 0 || (numPlayersPlaying <= 1 && numPlayers > 1)) {
+            gameState = GameState.Over;
+            canvasServer.SetActive(true);
+            if(numPlayersPlaying == 1) {
+                for (int i = 0; i < 4; i++) {
+                    if(players[i] != null) {
+                        if(players[i].playerState == PlayerState.Play) {
+                            Debug.Log("player win: " + i);
+                            players[i].score++;
+                            canvasServer.transform.GetChild(0).GetChild(i).GetComponent<Text>().text = players[i].score.ToString();
+                            players[i].ReturnPlayer();
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
