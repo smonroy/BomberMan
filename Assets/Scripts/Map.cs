@@ -29,7 +29,7 @@ public class Map : NetworkBehaviour {
         networkManager = FindObjectOfType<NetworkManager>().GetComponent<NetworkManager>();
 
         numPlayers = 0;
-        players = new Player[4];
+        players = new Player[] {null, null, null, null};
     }
 
     public void BuildMap(int mapRadio, bool irregular, int minTouchPoints) {
@@ -91,16 +91,11 @@ public class Map : NetworkBehaviour {
         }
     }
 
-    public void OnPlayerDisconnected(NetworkIdentity playerIdentity) {
-        for(int i = 0; i < 4; i++) {
-            if(players[i].go.GetComponent<NetworkIdentity>().netId == playerIdentity.netId) {
-                players[i].DestroyPlayer();
-                players[i] = null;
-            }
-            numPlayers--;
-            if(gameState != GameState.Start) {
-                networkManager.maxConnections = numPlayers;
-            }
+    public void PlayerDisconnected(int index) {
+        players[index] = null;
+        numPlayers--;
+        if(gameState != GameState.Start) {
+            networkManager.maxConnections = numPlayers;
         }
     }
 

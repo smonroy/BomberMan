@@ -16,6 +16,8 @@ public class PlayerController : NetworkBehaviour {
     private Side currentSide;
     private Side previousSide;
     private Map map;
+
+    [SyncVar]
     private int playerIndex;
 
     private GameObject canvas;
@@ -23,9 +25,11 @@ public class PlayerController : NetworkBehaviour {
     private Text speedText;
     private Text fireText;
     private Image face;
+    private int faceNum;
 
     // Use this for initialization
     void Start () {
+        faceNum = -1;
         currentSide = Side.Other;
         previousSide = currentSide;
         playerState = PlayerState.Start;
@@ -45,12 +49,30 @@ public class PlayerController : NetworkBehaviour {
         } else {
             canvas.SetActive(false);
         }
+        GetComponent<MeshRenderer>().material.color = playerColor[playerIndex];
+    }
+
+    public override void OnStartServer() {
+        FindObjectOfType<NetworkManagerHUD>().GetComponent<NetworkManagerHUD>().showGUI = false;
+        base.OnStartServer();
+    }
+
+    public override void OnStartClient() {
+        FindObjectOfType<NetworkManagerHUD>().GetComponent<NetworkManagerHUD>().showGUI = false;
+        base.OnStartClient();
     }
 
     // Update is called once per frame
     void Update () {
         if (!isLocalPlayer) {
             return;
+        }
+
+        if(face) {
+            if(faceNum != playerIndex) {
+                faceNum = playerIndex;
+                face.sprite = faces[faceNum];
+            }
         }
 
         switch (playerState) {
@@ -182,11 +204,5 @@ public class PlayerController : NetworkBehaviour {
     public void RpcSetPlayerIndex(int index) {
         playerIndex = index;
         GetComponent<MeshRenderer>().material.color = playerColor[playerIndex];
-        face.sprite = faces[playerIndex];
-    }
-
-    [ClientRpc]
-    public void RpcDestroy() {
-        Destroy(this);
     }
 }

@@ -196,7 +196,4 @@ public class Player {
         pc.RpcSetState(playerState);
     }
 
-    public void DestroyPlayer() {
-        pc.RpcDestroy();
-    }
 }

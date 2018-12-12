@@ -21,7 +21,7 @@ public class GameController : NetworkBehaviour {
     public void StartGame() {
         if(isServer) {
             map.BuildMap(3, false, 2);
-//            map.BuildMap(7, true, 2);
+            // map.BuildMap(7, true, 2);
             uIController.startButton.gameObject.SetActive(false);
         }
     }
