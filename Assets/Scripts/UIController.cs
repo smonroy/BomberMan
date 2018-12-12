@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class UIController : MonoBehaviour {
 
@@ -12,6 +13,7 @@ public class UIController : MonoBehaviour {
     public Text fireLabel;
     public Text speedLabel;
     public GameObject player;
+    public Button startButton;
 
     [Header("MusicSFX")]
     public AudioSource backgroundMusic;
@@ -25,14 +27,6 @@ public class UIController : MonoBehaviour {
     void Start () {
         backgroundMusic.Play();
         backgroundMusic.loop = true;
-        this.player.gameObject.SetActive(true);
-        this.itemUI.gameObject.SetActive(true);
-
-
     }
 
-    // Update is called once per frame
-    void Update () {
-		
-	}
 }

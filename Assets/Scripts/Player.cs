@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum PlayerState { Start, Play, Over }
+
 public class Player {
     public Cell cell;
     public int bombNumber;
@@ -9,7 +11,10 @@ public class Player {
     public int bombScope;
     public int speedCount;
     public float initialSpeed;
-    public UIController uiCont;
+    public int playerIndex;
+    public PlayerState playerState;
+    public GameObject go;
+    public int score;
 
     private const float centerMargin = 0.05f;
     private Cell nextCell;
@@ -19,8 +24,18 @@ public class Player {
     private float incrementsSpeed;
     private float maximunSpeed;
     private Vector3 position;
+    private Map map;
+    private Vector3 initialPosition;
 
-    public Player(Cell cell) {
+
+    public Player(int index) {
+        playerIndex = index;
+        score = 0;
+        playerState = PlayerState.Start;
+        map = GameObject.FindWithTag("Map").GetComponent<Map>();
+    }
+
+    public void StartPlayer(Cell cell) {
         this.cell = cell;
         nextCell = null;
         bombUsed = 0;
@@ -31,11 +46,21 @@ public class Player {
         incrementsSpeed = 0.1f;
         maximunSpeed = 1.4f;
         currentSpeed = initialSpeed;
+
+        initialPosition = pc.transform.position;
+
+        Vector3 pos = cell.position;
+        pos.y = go.transform.localScale.y;
+        playerState = PlayerState.Play;
+        pc.RpcPosition(pos, true);
+        pc.RpcSetState(playerState);
+        position = pos;
     }
 
     public void SetGO(GameObject go) {
+        this.go = go;
         pc = go.GetComponent<PlayerController>();
-        position = go.transform.position;
+        pc.RpcSetPlayerIndex(playerIndex);
     }
 
     public void Move(Side sideTry) {
@@ -140,7 +165,7 @@ public class Player {
         bc.player = this;
         bc.maxScope = bombScope;
         bombUsed++;
-        updateUI();
+        UpdateUI();
     }
 
     public void TakeItem() {
@@ -158,20 +183,29 @@ public class Player {
                     currentSpeed += incrementsSpeed;
                     speedCount++;
                     pc.uIController.speedUp.Play();
-                    Debug.Log(currentSpeed);
                 }
                 break;
         }
-        updateUI();
+        UpdateUI();
         cell.itemType = ItemType.nothing;
         cell.item.GetComponent<ItemController>().Destroy();
         cell.item = null;
     }
 
-    public void updateUI()
+    public void UpdateUI()
     {
-        pc.uIController.bombLabel.text = "= " + (this.bombNumber - this.bombUsed) + "/" + this.bombNumber;
-        pc.uIController.fireLabel.text = "= " + this.bombScope;
-        pc.uIController.speedLabel.text = "= " + this.speedCount;
+        pc.RpcUpdateUI(bombNumber - bombUsed, bombNumber, bombScope, speedCount);
     }
+
+    public void BombImpact() {
+        ReturnPlayer();
+        map.PlayerDead(playerIndex);
+    }
+
+    public void ReturnPlayer() {
+        ChangePosition(initialPosition, true);
+        playerState = PlayerState.Over;
+        pc.RpcSetState(playerState);
+    }
+
 }
