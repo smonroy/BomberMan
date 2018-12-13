@@ -79,14 +79,14 @@ public class BombController : NetworkBehaviour {
             fire1.transform.Rotate(Vector3.right, -90);
             fire1.transform.localScale = new Vector3(0.5f, vLen * 0.5f, 0.5f);
             fire1.transform.position += new Vector3(0, 0, vCenter * 0.5f);
-            Destroy(fire1, 0.2f);
+            Destroy(fire1, 0.3f);
             NetworkServer.Spawn(fire1);
 
             var fire2 = Instantiate(firePrefab, transform.position, Quaternion.identity);
             fire2.transform.Rotate(Vector3.forward, 90);
             fire2.transform.localScale = new Vector3(0.5f, hLen * 0.5f, 0.5f);
             fire2.transform.position += new Vector3(hCenter * 0.5f, 0, 0);
-            Destroy(fire2, 0.2f);
+            Destroy(fire2, 0.3f);
             NetworkServer.Spawn(fire2);
 
             cell.bomb = null;
