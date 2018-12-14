@@ -36,6 +36,9 @@ public class BombController : NetworkBehaviour {
             int vCenter = 0;
             int hLen = 1;
             int vLen = 1;
+            foreach (Player p in map.GetPlayersInCell(cell)) {
+                p.BombImpact();
+            }
             for (int side = 0; side < 4; side++) {
                 Cell c = cell.sides[side];
                 for (int scope = 0; scope < maxScope; scope++) {
