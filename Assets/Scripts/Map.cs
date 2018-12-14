@@ -25,12 +25,14 @@ public class Map : NetworkBehaviour {
     private NetworkManager networkManager;
     private int numPlayersPlaying;
     private GameObject canvasServer;
+    private GameObject scoresLabels;
 
     public override void OnStartServer() {
         gameState = GameState.Start;
         cellSize = new Vector2(1f, 1f);
         networkManager = FindObjectOfType<NetworkManager>().GetComponent<NetworkManager>();
         canvasServer = GameObject.Find("CanvasServer");
+        scoresLabels = GameObject.Find("ScoresLabels");
 
         numPlayers = 0;
         players = new Player[] {null, null, null, null};
@@ -306,7 +308,7 @@ public class Map : NetworkBehaviour {
                         if(players[i].playerState == PlayerState.Play) {
                             Debug.Log("player win: " + i);
                             players[i].score++;
-                            canvasServer.transform.GetChild(0).GetChild(i).GetComponent<Text>().text = players[i].score.ToString();
+                            scoresLabels.transform.GetChild(i).GetComponent<Text>().text = players[i].score.ToString();
                             players[i].ReturnPlayer();
                         }
                     }

@@ -11,7 +11,8 @@ public class CellController : NetworkBehaviour {
     }
 
     public GameObject PutItem(int itemIdex) {
-        GameObject item = Instantiate(itemPrefabs[itemIdex], transform.position, Quaternion.identity);
+        Map map = GameObject.Find("Map").GetComponent<Map>();
+        GameObject item = Instantiate(itemPrefabs[itemIdex], transform.position, Quaternion.identity, map.transform);
         NetworkServer.Spawn(item);
         return item;
     }
